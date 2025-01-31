@@ -1,47 +1,48 @@
 import 'dart:io';
-import 'dart:math';
 
-import 'package:absensi/ui/attend/camera.dart';
 import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_border/dotted_border.dart';
+// import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
-import '../home.dart';
+import 'package:absensi/ui/attend/camera.dart';
+import 'package:absensi/ui/home_screen.dart';
 
 class AttendScreen extends StatefulWidget {
   final XFile? image;
-
   const AttendScreen({super.key, this.image});
 
   @override
+  // ignore: no_logic_in_create_state
   State<AttendScreen> createState() => _AttendScreenState(this.image);
 }
 
 class _AttendScreenState extends State<AttendScreen> {
+  _AttendScreenState(this.image);
   String strDate = "",
       strTime = "",
       strDateTime = "",
       strStatus = "Attend",
       strAddress = "";
-  int dateHours = 0, dateMinutes = 0;
   double dLat = 0, dLong = 0;
+  int dateHours = 0, dateMinutes = 0;
   bool isLoading = false;
   XFile? image;
   final controllerName = TextEditingController();
-  final CollectionReference dataCollection = FirebaseFirestore.instance.collection('attendance');
-
-  _AttendScreenState(XFile? image);
+  final CollectionReference dataCollection =
+      FirebaseFirestore.instance.collection('attendance');
 
   @override
   void initState() {
+    super.initState();
     handleLocationPermission();
+    getGeoLocationPosition();
     setDateTime();
     setStatusAbsen();
-    super.initState();
   }
 
   @override
@@ -51,7 +52,7 @@ class _AttendScreenState extends State<AttendScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.black,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
@@ -65,7 +66,7 @@ class _AttendScreenState extends State<AttendScreen> {
       body: SingleChildScrollView(
         child: Card(
           color: Colors.white,
-          margin: const EdgeInsets.fromLTRB(10, 10, 10, 30),
+          margin: const EdgeInsets.fromLTRB(17, 15, 17, 30),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -80,7 +81,7 @@ class _AttendScreenState extends State<AttendScreen> {
                     topLeft: Radius.circular(10),
                     topRight: Radius.circular(10),
                   ),
-                  color: Colors.blueAccent,
+                  color: Colors.black,
                 ),
                 child: const Row(
                   children: [
@@ -122,19 +123,16 @@ class _AttendScreenState extends State<AttendScreen> {
                   child: DottedBorder(
                     radius: const Radius.circular(10),
                     borderType: BorderType.RRect,
-                    color: Colors.blueAccent,
+                    color: Colors.black,
                     strokeWidth: 1,
                     dashPattern: const [5, 5],
                     child: SizedBox.expand(
                       child: FittedBox(
                         child: image != null
-                            ? Image.file(
-                                File(image!.path),
-                                fit: BoxFit.cover,
-                              )
+                            ? Image.file(File(image!.path), fit: BoxFit.cover)
                             : const Icon(
                                 Icons.camera_enhance_outlined,
-                                color: Colors.blueAccent,
+                                color: Colors.black,
                               ),
                       ),
                     ),
@@ -145,8 +143,8 @@ class _AttendScreenState extends State<AttendScreen> {
                 padding: const EdgeInsets.all(10),
                 child: TextField(
                   textInputAction: TextInputAction.done,
-                  controller: controllerName,
                   keyboardType: TextInputType.text,
+                  controller: controllerName,
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 10),
                     labelText: "Your Name",
@@ -157,11 +155,11 @@ class _AttendScreenState extends State<AttendScreen> {
                         const TextStyle(fontSize: 14, color: Colors.black),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Colors.blueAccent),
+                      borderSide: const BorderSide(color: Colors.black),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Colors.blueAccent),
+                      borderSide: const BorderSide(color: Colors.black),
                     ),
                   ),
                 ),
@@ -176,57 +174,36 @@ class _AttendScreenState extends State<AttendScreen> {
                       color: Colors.black),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: SizedBox(
-                  height: 120,
-                  child: TextField(
-                    enabled: false,
-                    maxLines: 5,
-                    decoration: InputDecoration(
-                      alignLabelWithHint: true,
-                      disabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.blueAccent),
-                      ),
-                      hintText: 'Your Location',
-                      hintStyle:
-                          const TextStyle(fontSize: 14, color: Colors.grey),
-                      fillColor: Colors.transparent,
-                      filled: true,
-                    ),
-                  ),
-                ),
-              ),
               isLoading
                   ? const Center(
                       child: CircularProgressIndicator(
-                      color: Colors.blueAccent,
-                    ))
+                        color: Colors.black,
+                      ),
+                    )
                   : Padding(
                       padding: const EdgeInsets.all(10),
                       child: SizedBox(
                         height: 120,
                         child: TextField(
                           enabled: false,
-                          maxLines: 3,
+                          maxLines: 5,
                           decoration: InputDecoration(
                             alignLabelWithHint: true,
                             disabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide:
-                                  const BorderSide(color: Colors.blueAccent),
-                            ),
-                            hintText: strAddress.isEmpty
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide:
+                                    const BorderSide(color: Colors.black)),
+                            hintText: strAddress.isNotEmpty
                                 ? strAddress
                                 : 'Your Location',
-                            hintStyle:
-                                TextStyle(fontSize: 14, color: Colors.grey),
+                            hintStyle: const TextStyle(
+                                fontSize: 14, color: Colors.grey),
                             fillColor: Colors.transparent,
                             filled: true,
                           ),
                         ),
-                      )),
+                      ),
+                    ),
               Container(
                 alignment: Alignment.center,
                 margin: const EdgeInsets.all(30),
@@ -242,27 +219,31 @@ class _AttendScreenState extends State<AttendScreen> {
                     ),
                     child: Material(
                       borderRadius: BorderRadius.circular(20),
-                      color: Colors.blueAccent,
+                      color: Colors.black,
                       child: InkWell(
                         splashColor: Colors.blue,
                         borderRadius: BorderRadius.circular(20),
                         onTap: () {
-                          if (image == null||controllerName.text.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Row(
-                                  children: [
-                                    Icon(Icons.abc_outlined, color: Colors.white),
-                                    Expanded(child: Text("Please Complete the form", style: TextStyle(color: Colors.white))),
-                                  ],
-                                ),
-                                  backgroundColor: Colors.blueGrey,
-                                  shape: StadiumBorder(),
-                                  behavior: SnackBarBehavior.floating,
-                                ));
-
-                          }else {
-                            submitAddress(strAddress, controllerName.text.toString(), strStatus);
+                          if (image == null || controllerName.text.isEmpty) {
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(
+                              content: Row(
+                                children: [
+                                  Icon(Icons.abc_outlined, color: Colors.white),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    "Please complete the form",
+                                    style: TextStyle(color: Colors.white),
+                                  )
+                                ],
+                              ),
+                              backgroundColor: Colors.blueGrey,
+                              shape: StadiumBorder(),
+                              behavior: SnackBarBehavior.floating,
+                            ));
+                          } else {
+                            submitAbsen(strAddress,
+                                controllerName.text.toString(), strStatus);
                           }
                         },
                         child: const Center(
@@ -288,88 +269,91 @@ class _AttendScreenState extends State<AttendScreen> {
   Future<bool> handleLocationPermission() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.location_off, color: Colors.white),
-              SizedBox(
-                width: 10,
-              ),
-              Text(
-                'please enable location service',
-                style: TextStyle(color: Colors.white),
-              )
-            ],
-          ),
-          backgroundColor: Colors.blueGrey,
-          shape: StadiumBorder(),
-          behavior: SnackBarBehavior.floating,
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              Icons.location_off,
+              color: Colors.white,
+            ),
+            SizedBox(width: 10),
+            Text(
+              "Please enable location service",
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
         ),
-      );
+        backgroundColor: Colors.blueGrey,
+        shape: StadiumBorder(),
+        behavior: SnackBarBehavior.floating,
+      ));
       return false;
     }
+
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.location_off, color: Colors.white),
-                SizedBox(
-                  width: 10,
-                ),
-                Text(
-                  'location permission are denied, please enable location service',
-                  style: TextStyle(color: Colors.white),
-                )
-              ],
-            ),
-            backgroundColor: Colors.blueGrey,
-            shape: StadiumBorder(),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
-    if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Row(
             children: [
-              Icon(Icons.location_off, color: Colors.white),
-              SizedBox(
-                width: 10,
+              Icon(
+                Icons.location_off,
+                color: Colors.white,
               ),
+              SizedBox(width: 10),
               Text(
-                'location permission are denied forever, We cannot access your location',
+                "Location permissions are denied. Please enable location service",
                 style: TextStyle(color: Colors.white),
-              )
+              ),
             ],
           ),
           backgroundColor: Colors.blueGrey,
           shape: StadiumBorder(),
           behavior: SnackBarBehavior.floating,
+        ));
+        return false;
+      }
+    }
+
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              Icons.location_off,
+              color: Colors.white,
+            ),
+            SizedBox(width: 10),
+            Text(
+              "Location permissions are denied forever. We cannot access location service",
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
         ),
-      );
+        backgroundColor: Colors.blueGrey,
+        shape: StadiumBorder(),
+        behavior: SnackBarBehavior.floating,
+      ));
+      return false;
     }
     return true;
   }
 
   Future<void> getGeoLocationPosition() async {
-    // ignore:deprecated_member_use
+    // ignore: deprecated_member_use
     Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+        // ignore: deprecated_member_use
+        desiredAccuracy: LocationAccuracy.low);
     setState(() {
       isLoading = false;
-      getAddressFormLonglat(position);
+      getAddressFromLongLat(position);
     });
   }
 
-  Future<void> getAddressFormLonglat(Position position) async {
+  Future<void> getAddressFromLongLat(Position position) async {
     List<Placemark> placemarks =
         await placemarkFromCoordinates(position.latitude, position.longitude);
     print(placemarks);
@@ -384,7 +368,7 @@ class _AttendScreenState extends State<AttendScreen> {
 
   void setDateTime() async {
     var dateNow = DateTime.now();
-    var dateFormat = DateFormat('dd-mm-yyyy');
+    var dateFormat = DateFormat('dd MM yyyy');
     var dateTime = DateFormat('HH:mm:ss');
     var dateHour = DateFormat('HH');
     var dateMinute = DateFormat('mm');
@@ -393,6 +377,7 @@ class _AttendScreenState extends State<AttendScreen> {
       strDate = dateFormat.format(dateNow);
       strTime = dateTime.format(dateNow);
       strDateTime = "$strDate | $strTime";
+
       dateHours = int.parse(dateHour.format(dateNow));
       dateMinutes = int.parse(dateMinute.format(dateNow));
     });
@@ -401,39 +386,36 @@ class _AttendScreenState extends State<AttendScreen> {
   void setStatusAbsen() {
     if (dateHours < 8 || (dateHours == 8 && dateMinutes <= 30)) {
       strStatus = "Attend";
-    } else if ((dateHours > 8 && dateMinutes <= 18) ||
-        (dateHours > 8 && dateMinutes >= 31)) {
+    } else if ((dateHours > 8 && dateHours < 18) ||
+        (dateHours == 8 && dateMinutes >= 31)) {
       strStatus = "Late";
     } else {
       strStatus = "Absent";
     }
-    ;
   }
 
   showLoaderDialog(BuildContext context) {
     AlertDialog alert = AlertDialog(
-      content: Row(
-        children: [
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation(Colors.blueGrey),
-          ),
-          Container(
-            margin: const EdgeInsets.only(left: 10),
-            child: const Text("Loading the data..."),
-          )
-        ],
-      ),
-    );
+        content: Row(
+      children: [
+        const CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.blueGrey),
+        ),
+        Container(
+          margin: const EdgeInsets.only(left: 10),
+          child: const Text("Checking the Data..."),
+        )
+      ],
+    ));
     showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) {
+          return alert;
+        });
   }
 
-  Future<void> submitAddress(String address, String name, String status) async {
+  Future<void> submitAbsen(String address, String name, String status) async {
     showLoaderDialog(context);
     dataCollection.add({
       'address': address,
@@ -442,45 +424,60 @@ class _AttendScreenState extends State<AttendScreen> {
       'dateTime': strDateTime
     }).then((result) {
       setState(() {
-        Navigator.of(context).pop();
+        // Navigator.pop(context).pop();
         try {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Row(
+                children: [
+                  Icon(
+                    Icons.check_circle_outline,
+                    color: Colors.white,
+                  ),
+                  Text("Yeay! Your Attendance successfully record")
+                ],
+              ),
+              backgroundColor: Colors.orangeAccent,
+              shape: StadiumBorder(),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => HomeScreen()));
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                Text(
-                  'Your attendance has been recorded',
-                  style: TextStyle(color: Colors.white),
-                )
+                const Icon(
+                  Icons.info_outline,
+                  color: Colors.white,
+                ),
+                Expanded(
+                    child: Text(
+                  "Ups, $e",
+                  style: const TextStyle(color: Colors.white),
+                ))
               ],
             ),
             backgroundColor: Colors.orangeAccent,
             shape: StadiumBorder(),
             behavior: SnackBarBehavior.floating,
           ));
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()));
-        } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar( SnackBar(
-              content: Row(
-            children: [
-              const Icon(Icons.info_outline, color: Colors.white),
-              Expanded(child: Text("Ups, $e", style: const TextStyle(color: Colors.white))),
-            ],
-          ),
-            backgroundColor: Colors.orangeAccent,
-            shape: const StadiumBorder(),
-            behavior: SnackBarBehavior.floating,
-          )
-          );
         }
       });
-    }).catchError((error){
-      ScaffoldMessenger.of(context).showSnackBar( const SnackBar(
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Row(
           children: [
-            Icon(Icons.info_outline, color: Colors.white),
-            Expanded(child: Text("Ups, $e", style: TextStyle(color: Colors.white))),
+            const Icon(
+              Icons.error_outline,
+              color: Colors.white,
+            ),
+            Expanded(
+                child: Text(
+              "Ups, $error",
+              style: const TextStyle(color: Colors.white),
+            ))
           ],
         ),
         backgroundColor: Colors.orangeAccent,
@@ -491,3 +488,217 @@ class _AttendScreenState extends State<AttendScreen> {
     });
   }
 }
+
+//get realtime location
+  // Future<void> getGeoLocationPosition() async {
+  //   Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
+  //   setState(() {
+  //     isLoading = false;
+  //     getAddressFromLongLat(position);
+  //   });
+  // }
+
+  // //get address by lat long
+  // Future<void> getAddressFromLongLat(Position position) async {
+  //   List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+  //   print(placemarks);
+  //   Placemark place = placemarks[0];
+  //   setState(() {
+  //     dLat = double.parse('${position.latitude}');
+  //     dLat = double.parse('${position.longitude}');
+  //     strAddress =
+  //     "${place.street}, ${place.subLocality}, ${place.locality}, ${place.postalCode}, ${place.country}";
+  //   });
+  // }
+
+  // //permission location
+  // Future<bool> handleLocationPermission() async {
+  //   bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  //   if (!serviceEnabled) {
+  //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+  //       content: Row(
+  //         children: [
+  //           Icon(
+  //             Icons.location_off,
+  //             color: Colors.white,
+  //           ),
+  //           SizedBox(width: 10),
+  //           Text("Location services are disabled. Please enable the services.",
+  //               style: TextStyle(color: Colors.white),
+  //           )
+  //         ],
+  //       ),
+  //       backgroundColor: Colors.redAccent,
+  //       shape: StadiumBorder(),
+  //       behavior: SnackBarBehavior.floating,
+  //     ));
+  //     return false;
+  //   }
+
+  //   LocationPermission permission = await Geolocator.checkPermission();
+  //   if (permission == LocationPermission.denied) {
+  //     permission = await Geolocator.requestPermission();
+  //     if (permission == LocationPermission.denied) {
+  //       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+  //         content: Row(
+  //           children: [
+  //             Icon(
+  //               Icons.location_off,
+  //               color: Colors.white,
+  //             ),
+  //             SizedBox(width: 10),
+  //             Text("Location permission denied.",
+  //                 style: TextStyle(color: Colors.white),
+  //             )
+  //           ],
+  //         ),
+  //         backgroundColor: Colors.redAccent,
+  //         shape: StadiumBorder(),
+  //         behavior: SnackBarBehavior.floating,
+  //       ));
+  //       return false;
+  //     }
+  //   }
+
+  //   if (permission == LocationPermission.deniedForever) {
+  //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+  //       content: Row(
+  //         children: [
+  //           Icon(
+  //             Icons.location_off,
+  //             color: Colors.white,
+  //           ),
+  //           SizedBox(width: 10),
+  //           Text("Location permission denied forever, we cannot access.",
+  //               style: TextStyle(color: Colors.white),
+  //           )
+  //         ],
+  //       ),
+  //       backgroundColor: Colors.redAccent,
+  //       shape: StadiumBorder(),
+  //       behavior: SnackBarBehavior.floating,
+  //     ));
+  //     return false;
+  //   }
+  //   return true;
+  // }
+
+  // //show progress dialog
+  // showLoaderDialog(BuildContext context) {
+  //   AlertDialog alert = AlertDialog(
+  //     content: Row(
+  //       children: [
+  //         const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.pinkAccent)),
+  //         Container(
+  //             margin: const EdgeInsets.only(left: 20),
+  //             child: const Text("sedang memeriksa data..."),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  //   showDialog(
+  //     barrierDismissible: false,
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return alert;
+  //     },
+  //   );
+  // }
+
+  // //check format date time
+  // void setDateTime() async {
+  //   var dateNow = DateTime.now();
+  //   var dateFormat = DateFormat('dd MMMM yyyy');
+  //   var dateTime = DateFormat('HH:mm:ss');
+  //   var dateHour = DateFormat('HH');
+  //   var dateMinute = DateFormat('mm');
+
+  //   setState(() {
+  //     strDate = dateFormat.format(dateNow);
+  //     strTime = dateTime.format(dateNow);
+  //     strDateTime = "$strDate | $strTime";
+
+  //     dateHours = int.parse(dateHour.format(dateNow));
+  //     dateMinutes = int.parse(dateMinute.format(dateNow));
+  //   });
+  // }
+
+  // //check status absent
+  // void setStatusAbsen() {
+  //   if (dateHours < 8 || (dateHours == 8 && dateMinutes <= 30)) {
+  //     strStatus = "Absen Masuk";
+  //   }
+  //   else if ((dateHours > 8 && dateHours < 18) || (dateHours == 8 && dateMinutes >= 31)) {
+  //     strStatus = "Absen Telat";
+  //   }
+  //   else {
+  //     strStatus = "Absen Keluar";
+  //   }
+  // }
+
+  // //submit data absent to firebase
+  // Future<void> submitAbsen(String address, String name, String status) async {
+  //     showLoaderDialog(context);
+  //     dataCollection.add({'address': address, 'name': name,
+  //       'status': status, 'datetime': strDateTime}).then((result) {
+  //       setState(() {
+  //         Navigator.of(context).pop();
+  //         try {
+  //           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+  //             content: Row(
+  //               children: [
+  //                 Icon(
+  //                   Icons.check_circle_outline,
+  //                   color: Colors.white,
+  //                 ),
+  //                 SizedBox(width: 10),
+  //                 Text("Yeay! Absen berhasil!", style: TextStyle(color: Colors.white))
+  //               ],
+  //             ),
+  //             backgroundColor: Colors.green,
+  //             shape: StadiumBorder(),
+  //             behavior: SnackBarBehavior.floating,
+  //           ));
+  //           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+  //         }
+  //         catch (e) {
+  //           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //             content: Row(
+  //               children: [
+  //                 const Icon(
+  //                   Icons.info_outline,
+  //                   color: Colors.white,
+  //                 ),
+  //                 const SizedBox(width: 10),
+  //                 Expanded(
+  //                   child: Text("Ups, $e", style: const TextStyle(color: Colors.white)),
+  //                 ),
+  //               ],
+  //             ),
+  //             backgroundColor: Colors.redAccent,
+  //             shape: const StadiumBorder(),
+  //             behavior: SnackBarBehavior.floating,
+  //           ));
+  //         }
+  //       });
+  //     }).catchError((error) {
+  //       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  //         content: Row(
+  //           children: [
+  //             const Icon(
+  //               Icons.error_outline,
+  //               color: Colors.white,
+  //             ),
+  //             const SizedBox(width: 10),
+  //             Expanded(
+  //                 child: Text("Ups, $error", style: const TextStyle(color: Colors.white))
+  //             )
+  //           ],
+  //         ),
+  //         backgroundColor: Colors.redAccent,
+  //         shape: const StadiumBorder(),
+  //         behavior: SnackBarBehavior.floating,
+  //       ));
+  //       Navigator.of(context).pop();
+  //     });
+  // }
